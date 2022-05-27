@@ -3,7 +3,9 @@ package cache
 import "time"
 
 type Cache struct {
-	m map[string]expiringCache
+	m                               map[string]expiringCache
+	amountExpiringCacheWithDeadline int
+	isRunning                       bool
 }
 
 type expiringCache struct {
@@ -23,12 +25,16 @@ func (c *Cache) waitExpiringCache() {
 	for {
 		time.Sleep(1 * time.Second)
 		c.deleteExpired()
+		c.amountExpiringCacheWithDeadline--
+		if c.amountExpiringCacheWithDeadline == 0 {
+			c.isRunning = false
+			break
+		}
 	}
 }
 
 func NewCache() Cache {
-	cache := Cache{make(map[string]expiringCache)}
-	cache.waitExpiringCache()
+	cache := Cache{m: make(map[string]expiringCache)}
 	return cache
 }
 
@@ -51,4 +57,9 @@ func (c Cache) Keys() []string {
 
 func (c Cache) PutTill(key, value string, deadline time.Time) {
 	c.m[key] = expiringCache{value: value, deadline: deadline}
+	if !c.isRunning {
+		c.amountExpiringCacheWithDeadline++
+		c.waitExpiringCache()
+		c.isRunning = true
+	}
 }
