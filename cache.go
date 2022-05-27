@@ -21,8 +21,8 @@ func (c *Cache) Put(key, value string) {
 
 func (c Cache) Keys() []string {
 	var result []string
-	for _, vl := range c.m {
-		result = append(result, vl)
+	for key := range c.m {
+		result = append(result, key)
 	}
 	return result
 }
