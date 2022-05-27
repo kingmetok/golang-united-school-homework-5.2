@@ -55,7 +55,7 @@ func (c Cache) Keys() []string {
 	return result
 }
 
-func (c Cache) PutTill(key, value string, deadline time.Time) {
+func (c *Cache) PutTill(key, value string, deadline time.Time) {
 	c.m[key] = expiringCache{value: value, deadline: deadline}
 	if !c.isRunning {
 		c.amountExpiringCacheWithDeadline++
